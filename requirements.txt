@@ -10,3 +10,4 @@ langchain-google-genai
 passlib[bcrypt]
 python-jose[cryptography]
 bcrypt==4.1.2
+python-multipart
