@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+motor
+python-docx
+jinja2
+python-dotenv
+pymongo
+langchain
+langchain-google-genai
+passlib[bcrypt]
+python-jose[cryptography]
+bcrypt==4.1.2

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MOM Platform - Admin Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .fade-in {
+      animation: fadeIn 0.7s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(15px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .glass {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full mx-4 fade-in">
+    <!-- Card -->
+    <div class="glass rounded-2xl shadow-2xl p-8">
+      <div class="flex flex-col items-center mb-8">
+        <div class="w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+          <i class="fas fa-lock text-white text-3xl"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800">Admin Login</h1>
+        <p class="text-gray-700 mt-2">Secure access to the dashboard</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm">
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+            <i class="fas fa-envelope mr-2 text-indigo-500"></i>Email
+          </label>
+          <input type="email" name="email" required 
+            class="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition duration-200"
+            placeholder="admin@example.com" />
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+            <i class="fas fa-key mr-2 text-purple-500"></i>Password
+          </label>
+          <input type="password" name="password" required 
+            class="w-full p-4 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-400 focus:border-transparent transition duration-200"
+            placeholder="Enter your password" />
+        </div>
+
+        <button type="submit"
+          class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-lg shadow-lg transition transform hover:-translate-y-0.5">
+          <i class="fas fa-sign-in-alt mr-2"></i> Sign In
+        </button>
+      </form>
+
+    </div>
+
+    <!-- Back Link -->
+    <div class="text-center mt-6">
+      <a href="/" class="inline-flex items-center text-gray-700 hover:text-gray-900 font-medium transition">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          body: formData,
+          credentials: "include"
+        });
+        if (!res.ok) {
+          const error = await res.json();
+          alert("Login failed: " + error.detail);
+          return;
+        }
+        window.location.href = "/admin";
+      } catch (err) {
+        alert("Login error: " + err.message);
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOM Platform - Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .word-count { font-size: 0.75rem; color: #6b7280; }
+    .word-limit-exceeded { border-color: #ef4444 !important; }
+    .fade-in { animation: fadeIn 0.5s ease-in; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8 fade-in">
+      <div class="text-left">
+        <h1 class="text-4xl font-bold text-gray-800 flex items-center">
+          <i class="fas fa-clipboard-list mr-3 text-blue-600"></i>
+          Minutes of Meeting
+        </h1>
+        <p class="text-gray-600">Daily Progress & Action Items</p>
+      </div>
+      <!-- Admin Panel Button -->
+      <a href="/login" 
+         class="inline-flex items-center bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition duration-200">
+        <i class="fas fa-user-shield mr-2"></i>Admin Panel
+      </a>
+    </div>
+
+    <!-- Report Form -->
+    <div class="max-w-2xl mx-auto fade-in">
+      <div class="bg-white rounded-xl shadow-lg p-6 glass-effect">
+        <form id="reportForm">
+          <!-- Date -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-calendar mr-2 text-blue-500"></i>Date
+            </label>
+            <input type="text" name="date" value="{{ today_date }}" readonly 
+                   class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
+          </div>
+
+          <!-- Name -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-user mr-2 text-green-500"></i>Team Member
+            </label>
+            <select name="name" id="nameSelect" 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    onchange="checkReport()">
+              <option value="">Select a team member</option>
+              {% for user in users %}
+              <option value="{{ user }}">{{ user }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Yesterday -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-history mr-2 text-orange-500"></i>Yesterday's Accomplishments (Max 20 words)
+            </label>
+            <div class="relative">
+              <textarea name="yesterday" id="yesterday" rows="2"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 resize-none"
+                        placeholder="Brief summary..." maxlength="100"></textarea>
+              <button type="button" onclick="addBullet('yesterday')" 
+                      class="absolute right-3 top-3 text-gray-400 hover:text-orange-500">
+                <i class="fas fa-list-ul"></i>
+              </button>
+            </div>
+            <div class="word-count mt-1">Words: <span id="yesterdayCount">0</span>/20</div>
+          </div>
+
+          <!-- Today -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-tasks mr-2 text-blue-500"></i>Today's Priorities (Max 20 words)
+            </label>
+            <div class="relative">
+              <textarea name="today" id="today" rows="2"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                        placeholder="Key tasks..." maxlength="100"></textarea>
+              <button type="button" onclick="addBullet('today')" 
+                      class="absolute right-3 top-3 text-gray-400 hover:text-blue-500">
+                <i class="fas fa-list-ul"></i>
+              </button>
+            </div>
+            <div class="word-count mt-1">Words: <span id="todayCount">0</span>/20</div>
+          </div>
+
+          <!-- Blockers -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Blockers (Optional, Max 20 words)
+            </label>
+            <div class="relative">
+              <textarea name="blockers" id="blockers" rows="2"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 resize-none"
+                        placeholder="Any obstacles..." maxlength="100"></textarea>
+              <button type="button" onclick="addBullet('blockers')" 
+                      class="absolute right-3 top-3 text-gray-400 hover:text-red-500">
+                <i class="fas fa-list-ul"></i>
+              </button>
+            </div>
+            <div class="word-count mt-1">Words: <span id="blockersCount">0</span>/20</div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-3">
+            <button type="submit" id="saveButton" 
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+              <i class="fas fa-save mr-2"></i>Save Report
+            </button>
+            <button type="button" id="previewButton" 
+                    class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center hidden">
+              <i class="fas fa-eye mr-2"></i>Preview
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Word Count ---
+    function updateWordCount(textareaId, countId) {
+      const textarea = document.getElementById(textareaId);
+      const countSpan = document.getElementById(countId);
+      const words = textarea.value.trim().split(/\s+/).filter(word => word.length > 0).length;
+      countSpan.textContent = words;
+      textarea.classList.toggle('word-limit-exceeded', words > 10);
+    }
+
+    function addBullet(fieldId) {
+      const textarea = document.getElementById(fieldId);
+      const cursorPos = textarea.selectionStart;
+      textarea.value = textarea.value.substring(0, cursorPos) + '\n• ' + textarea.value.substring(cursorPos);
+      textarea.focus();
+      updateWordCount(fieldId, fieldId + 'Count');
+    }
+
+    ['yesterday','today','blockers'].forEach(id=>{
+      document.getElementById(id).addEventListener('input',()=>updateWordCount(id,id+'Count'));
+      updateWordCount(id,id+'Count');
+    });
+
+    async function checkReport() {
+      const date = document.querySelector("input[name='date']").value;
+      const name = document.querySelector("select[name='name']").value;
+      const saveButton = document.getElementById("saveButton");
+      const previewButton = document.getElementById("previewButton");
+      const yesterday = document.getElementById("yesterday");
+      const today = document.getElementById("today");
+      const blockers = document.getElementById("blockers");
+
+      if (!name) { resetForm(); return; }
+      try {
+        const response = await fetch(`/check_report/${date}/${name}`);
+        const result = await response.json();
+        if (result.exists) {
+          yesterday.value = result.report.yesterday;
+          today.value = result.report.today;
+          blockers.value = result.report.blockers;
+          ['yesterday','today','blockers'].forEach(id=>updateWordCount(id,id+'Count'));
+          saveButton.classList.add("hidden");
+          previewButton.classList.remove("hidden");
+          yesterday.readOnly = today.readOnly = blockers.readOnly = true;
+          alert("Report already submitted for today. Use Preview.");
+        } else { resetForm(); }
+      } catch { alert("Error checking report"); }
+    }
+
+    function resetForm() {
+      ['yesterday','today','blockers'].forEach(id=>{
+        const t=document.getElementById(id);
+        t.value=''; t.readOnly=false;
+        updateWordCount(id,id+'Count');
+      });
+      document.getElementById("saveButton").classList.remove("hidden");
+      document.getElementById("previewButton").classList.add("hidden");
+    }
+
+    document.getElementById("reportForm").addEventListener("submit", async e=>{
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const yesterday = formData.get("yesterday").trim();
+      const today = formData.get("today").trim();
+      if (!yesterday||!today) { alert("Fields cannot be empty"); return; }
+      if (yesterday.split(/\s+/).length>10||today.split(/\s+/).length>10) {
+        alert("Each field must not exceed 10 words"); return;
+      }
+      try {
+        const response=await fetch("/save_report",{method:"POST",body:formData});
+        if(!response.ok){const error=await response.json();alert(error.detail);return;}
+        await response.json();
+        alert("Report saved successfully!");
+        resetForm(); e.target.querySelector("select[name='name']").value="";
+      } catch { alert("Error saving report"); }
+    });
+
+    document.getElementById("previewButton").addEventListener("click",()=>{
+      const name=document.querySelector("select[name='name']").value;
+      alert(`Preview for ${name}:\n\nYesterday: ${yesterday.value}\n\nToday: ${today.value}\n\nBlockers: ${blockers.value}`);
+    });
+  </script>
+</body>
+</html>
