@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MOM Platform - Admin Panel</title>
+  <title>MOM Platform - Reports</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -46,6 +46,12 @@
       background: linear-gradient(to right, #059669, #047857);
       transform: translateY(-1px);
     }
+    .stats-card {
+      background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
     .table-container {
       overflow-x: auto;
       max-height: 500px;
@@ -82,6 +88,20 @@
     .action-items {
       white-space: pre-wrap;
     }
+    .nav-link {
+      color: #4b5563;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+    .nav-link.active {
+      background: #6366f1;
+      color: white;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen">
@@ -90,147 +110,89 @@
     <div class="flex justify-between items-center mb-8 fade-in">
       <div class="text-left">
         <h1 class="text-4xl font-bold text-gray-800 flex items-center">
-          <i class="fas fa-user-shield mr-3 text-indigo-600"></i>
-          Admin Panel
+          <i class="fas fa-file-alt mr-3 text-indigo-600"></i>
+          Reports
         </h1>
-        <p class="text-gray-600 text-lg">Manage Team & Reports</p>
+        <p class="text-gray-600 text-lg">View Reports & Action Items</p>
       </div>
-      <button onclick="logout()" 
-              class="inline-flex items-center bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition duration-200">
-        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-      </button>
+      <div class="flex gap-4">
+        <a href="/team_members" class="nav-link">Manage Team</a>
+        <button onclick="logout()" 
+                class="inline-flex items-center bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition duration-200">
+          <i class="fas fa-sign-out-alt mr-2"></i>Logout
+        </button>
+      </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Add User Section -->
-      <div class="lg:col-span-1">
-        <div class="bg-white rounded-2xl shadow-xl p-8 glass-effect fade-in">
-          <h2 class="text-xl font-bold mb-4 flex items-center section-header">
-            <i class="fas fa-user-plus mr-2 text-green-500"></i>Add Team Member
-          </h2>
-          <input type="text" id="newUserName" placeholder="Enter name" 
-                 class="w-full p-3 mb-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400">
-          <button onclick="addUser()" class="btn-secondary w-full">
-            <i class="fas fa-plus mr-2"></i>Add User
-          </button>
+    <!-- Stats Card -->
+    <div class="mb-6 fade-in">
+      <div class="stats-card flex items-center justify-between p-4">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-700">Reports for Selected Date</h3>
+          <p id="totalReports" class="text-2xl font-bold text-indigo-600">0</p>
         </div>
-
-        <!-- Current Users -->
-        <div class="bg-white rounded-2xl shadow-xl p-8 glass-effect fade-in mt-6">
-          <h2 class="text-xl font-bold mb-4 flex items-center section-header">
-            <i class="fas fa-users mr-2 text-blue-500"></i>Current Team Members
-          </h2>
-          <ul id="userList" class="list-disc pl-5"></ul>
-        </div>
+        <i class="fas fa-file-alt text-3xl text-indigo-500"></i>
       </div>
+    </div>
 
-      <!-- Reports Section -->
-      <div class="lg:col-span-2">
-        <div class="bg-white rounded-2xl shadow-xl p-8 glass-effect fade-in">
-          <h2 class="text-xl font-bold mb-4 flex items-center section-header">
-            <i class="fas fa-file-alt mr-2 text-orange-500"></i>View Reports
-          </h2>
-          <div class="flex gap-4 mb-4">
-            <input type="date" id="reportDate" class="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 flex-1">
-            <button onclick="loadReports()" class="btn-primary">
-              <i class="fas fa-search mr-2"></i>Load Reports
-            </button>
-            <button onclick="viewTodayReport()" class="btn-secondary">
-              <i class="fas fa-calendar-day mr-2"></i>Today's Report
-            </button>
-          </div>
-          <div id="reportsLoading" class="hidden"><div class="loading-spinner"></div></div>
-          <div class="table-container">
-            <table id="reportsTable" class="hidden">
-              <thead>
-                <tr>
-                  <th>S.No</th>
-                  <th>Name</th>
-                  <th>Yesterday</th>
-                  <th>Today</th>
-                  <th>Blockers</th>
-                </tr>
-              </thead>
-              <tbody id="reportsBody"></tbody>
-            </table>
-          </div>
-          <div class="flex justify-end gap-4 mt-6">
-            <button id="generateActionBtn" onclick="generateActionItems()" class="btn-primary hidden">
-              <i class="fas fa-magic mr-2"></i>Generate Action Items
-            </button>
-            <button id="downloadBtn" onclick="downloadReport()" class="btn-secondary hidden">
-              <i class="fas fa-download mr-2"></i>Download Report
-            </button>
-          </div>
-        </div>
-
-        <!-- Action Items Section -->
-        <div class="bg-white rounded-2xl shadow-xl p-8 glass-effect fade-in mt-6">
-          <h2 class="text-xl font-bold mb-4 flex items-center section-header">
-            <i class="fas fa-tasks mr-2 text-purple-500"></i>Action Items
-          </h2>
-          <div id="actionItemsLoading" class="hidden"><div class="loading-spinner"></div></div>
-          <ul id="actionItemsList" class="list-disc pl-5"></ul>
-        </div>
+    <!-- Reports Section -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 glass-effect fade-in">
+      <h2 class="text-xl font-bold mb-4 flex items-center section-header">
+        <i class="fas fa-file-alt mr-2 text-orange-500"></i>View Reports
+      </h2>
+      <div class="flex gap-4 mb-4">
+        <input type="date" id="reportDate" value="{{ today_date }}" class="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 flex-1">
+        <button onclick="loadReports()" class="btn-primary">
+          <i class="fas fa-search mr-2"></i>Load Reports
+        </button>
+        <button onclick="viewTodayReport()" class="btn-secondary">
+          <i class="fas fa-calendar-day mr-2"></i>Today's Report
+        </button>
       </div>
+      <div id="reportsLoading" class="hidden"><div class="loading-spinner"></div></div>
+      <div class="table-container">
+        <table id="reportsTable" class="hidden">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Name</th>
+              <th>Yesterday</th>
+              <th>Today</th>
+              <th>Blockers</th>
+            </tr>
+          </thead>
+          <tbody id="reportsBody"></tbody>
+        </table>
+      </div>
+      <div class="flex justify-end gap-4 mt-6">
+        <button id="generateActionBtn" onclick="generateActionItems()" class="btn-primary hidden">
+          <i class="fas fa-magic mr-2"></i>Generate Action Items
+        </button>
+        <button id="downloadBtn" onclick="downloadReport()" class="btn-secondary hidden">
+          <i class="fas fa-download mr-2"></i>Download Report
+        </button>
+      </div>
+    </div>
+
+    <!-- Action Items Section -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 glass-effect fade-in mt-6">
+      <h2 class="text-xl font-bold mb-4 flex items-center section-header">
+        <i class="fas fa-tasks mr-2 text-purple-500"></i>Action Items
+      </h2>
+      <div id="actionItemsLoading" class="hidden"><div class="loading-spinner"></div></div>
+      <ul id="actionItemsList" class="list-disc pl-5 space-y-1"></ul>
     </div>
   </div>
 
   <script>
     // Set default date to today
-    document.getElementById('reportDate').value = '2025-09-24'; // Using the current date
+    document.getElementById('reportDate').value = '{{ today_date }}';
 
     // Logout (clear cookie and redirect)
     function logout() {
       document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       window.location.href = '/login';
     }
-
-    // Add User
-    async function addUser() {
-      const name = document.getElementById('newUserName').value.trim();
-      if (!name) {
-        alert('Please enter a name');
-        return;
-      }
-      try {
-        const response = await fetch('/add_user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `name=${encodeURIComponent(name)}`
-        });
-        if (!response.ok) {
-          const error = await response.json();
-          alert(error.detail);
-          return;
-        }
-        await response.json();
-        alert('User added successfully!');
-        document.getElementById('newUserName').value = '';
-        loadUsers();
-      } catch {
-        alert('Error adding user');
-      }
-    }
-
-    // Load Users
-    async function loadUsers() {
-      try {
-        const response = await fetch('/users');
-        const users = await response.json();
-        const userList = document.getElementById('userList');
-        userList.innerHTML = '';
-        users.forEach(user => {
-          const li = document.createElement('li');
-          li.textContent = user;
-          userList.appendChild(li);
-        });
-      } catch {
-        alert('Error loading users');
-      }
-    }
-    loadUsers(); // Initial load
 
     // Load Reports
     async function loadReports() {
@@ -262,6 +224,7 @@
         table.classList.remove('hidden');
         document.getElementById('generateActionBtn').classList.remove('hidden');
         document.getElementById('downloadBtn').classList.remove('hidden');
+        document.getElementById('totalReports').textContent = reports.length;
         loadActionItems();
       } catch {
         alert('Error loading reports');
@@ -275,12 +238,12 @@
       if (!text || text === 'None') return 'None';
       const points = text.split('\n').filter(p => p.trim());
       if (points.length === 0) return '';
-      return `<ul class="list-disc pl-5">${points.map(p => `<li>${p.replace(/^•\s*/, '')}</li>`).join('')}</ul>`;
+      return `<ul class="list-disc pl-5 space-y-1">${points.map(p => `<li>${p.replace(/^•\s*/, '')}</li>`).join('')}</ul>`;
     }
 
     // View Today's Report
     function viewTodayReport() {
-      document.getElementById('reportDate').value = '2025-09-24';
+      document.getElementById('reportDate').value = '{{ today_date }}';
       loadReports();
     }
 
@@ -308,7 +271,6 @@
         const data = await response.json();
         displayActionItems(data.action_items);
       } catch {
-        // No action items yet
         document.getElementById('actionItemsList').innerHTML = '';
       }
     }
@@ -336,6 +298,9 @@
       const date = document.getElementById('reportDate').value;
       window.location.href = `/download_report/${date}`;
     }
+
+    // Initial load
+    loadReports();
   </script>
 </body>
 </html>

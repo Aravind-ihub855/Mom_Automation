@@ -175,10 +175,20 @@ async def save_report(
     await reports_collection.insert_one(report.dict())
     return {"message": "Report saved successfully"}
 
-# Admin page
+# Admin page (redirect to team members)
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request, token: str = Depends(get_current_admin)):
-    return templates.TemplateResponse("admin.html", {"request": request})
+    return templates.TemplateResponse("team_members.html", {"request": request, "today_date": get_today_date()})
+
+# Team Members page
+@app.get("/team_members", response_class=HTMLResponse)
+async def team_members_page(request: Request, token: str = Depends(get_current_admin)):
+    return templates.TemplateResponse("team_members.html", {"request": request, "today_date": get_today_date()})
+
+# Reports page
+@app.get("/reports", response_class=HTMLResponse)
+async def reports_page(request: Request, token: str = Depends(get_current_admin)):
+    return templates.TemplateResponse("reports.html", {"request": request, "today_date": get_today_date()})
 
 # Add user
 @app.post("/add_user")
@@ -189,6 +199,17 @@ async def add_user(name: str = Form(...), token: str = Depends(get_current_admin
     user = User(name=name)
     await users_collection.insert_one(user.dict())
     return {"message": "User added successfully"}
+
+# Delete user
+@app.post("/delete_user")
+async def delete_user(name: str = Form(...), token: str = Depends(get_current_admin)):
+    existing_user = await users_collection.find_one({"name": name})
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    await users_collection.delete_one({"name": name})
+    # Optionally, delete associated reports
+    await reports_collection.delete_many({"name": name})
+    return {"message": "User deleted successfully"}
 
 # Get users
 @app.get("/users")
