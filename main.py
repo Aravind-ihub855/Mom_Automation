@@ -246,11 +246,17 @@ async def generate_action_items(date: str, token: str = Depends(get_current_admi
     for report in reports:
         content += f"{report['name']}:\n- Yesterday: {report['yesterday']}\n- Today: {report['today']}\n- Blockers: {report['blockers']}\n\n"
     
-    prompt = f"""From the following daily reports, extract action items in bullet point format. 
-    Use this structure:
-    • [Action Item] - Assigned to [Person if identifiable]
-    • [Action Item] - [Additional details]
-    
+    prompt = f"""From the following daily reports, extract the main and unique action items based on the 'Today's Priorities' field. 
+    Follow these guidelines:
+    - Extract each distinct task as a separate action item - do not combine unrelated tasks, even if they come from the same person.
+    - For example, if one person mentions both "lead generation" and "MOM automation implementation", treat them as two separate action items.
+    - Only consolidate tasks that are directly related (e.g., multiple aspects of the same feature like "enhancing and testing" the same agents).
+    - Focus on the primary objectives for the day.
+    - Each action item should be distinct and represent a unique goal or task.
+    - Output in bullet point format using this structure:
+    • [Action Item]
+    - Ensure no unrelated tasks are merged together.
+
     Reports:\n{content}"""
     
     try:
